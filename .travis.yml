@@ -1,0 +1,15 @@
+language: python
+python:
+  - "3.6"
+  - "3.7-dev"
+services:
+  - docker
+env:
+  global:
+    - PIP_USE_MIRRORS=true
+  matrix:
+    - INFLUX_DB_TAG=1.3.9-alpine
+    - INFLUX_DB_TAG=1.7.4-alpine
+script:
+- docker run -d -p 127.0.0.1:8086:8086 -e INFLUXDB_DB=tsdb_test influxdb:$INFLUX_DB_TAG
+- python setup.py test
