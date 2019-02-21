@@ -1,0 +1,18 @@
+# VSCode
+/.vscode
+
+# Python
+__pycache__
+venv
+/.python-version
+/tsdb_wrapper.egg-info
+/build
+/dist
+/.eggs
+
+# Test
+/covhtml
+/.mypy_cache
+
+# General
+*.sock

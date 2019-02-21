@@ -1,0 +1,52 @@
+[
+  {
+    "category": "simple",
+    "time": "2050-09-10T11:00:00Z",
+    "tags": {
+      "tk1": "tv1a", "tk2": "tv2a", "tk3": "tv3a"
+    },
+    "fields": {
+      "fk1": "fv1a", "fk2": 1.0
+    }
+  },
+  {
+    "category": "simple",
+    "time": "2050-09-10T12:00:00Z",
+    "tags": {
+      "tk1": "tv1a", "tk2": "tv2a", "tk3": "tv3a"
+    },
+    "fields": {
+      "fk1": "fv1a", "fk2": 10.0
+    }
+  },
+  {
+    "category": "simple",
+    "time": "2050-09-10T13:00:00Z",
+    "tags": {
+      "tk1": "tv1a", "tk2": "tv2a", "tk3": "tv3a"
+    },
+    "fields": {
+      "fk1": "fv1b", "fk2": 10.0
+    }
+  },
+  {
+    "category": "simple",
+    "time": "2050-09-10T14:00:00Z",
+    "tags": {
+      "tk1": "tv1b", "tk2": "tv2a", "tk3": "tv3a"
+    },
+    "fields": {
+      "fk1": "fv1a", "fk2": 1.0
+    }
+  },
+  {
+    "category": "simple",
+    "time": "2050-09-10T15:00:00Z",
+    "tags": {
+      "tk1": "tv1b", "tk2": "tv2b", "tk3": "tv3a"
+    },
+    "fields": {
+      "fk1": "fv1a", "fk2": 1.0
+    }
+  }
+]
