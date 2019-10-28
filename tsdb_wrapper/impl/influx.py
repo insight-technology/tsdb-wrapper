@@ -25,14 +25,21 @@ class InfluxDB(TimeseriesDatabase):
 
     @TimeseriesDatabase.schema.getter  # type: ignore
     def schema(self):
+        return self.get_filtered_schema()
+
+    def get_filtered_schema(
+            self,
+            tags: Dict[str, str] = {},
+            *,
+            use_like = False):
         ret = TimeseriesDataSchema()
 
         categories = self.get_categories()
         for m in categories:
-            tags = {}
+            tag_values = {}
             for k in self.get_tag_keys_of_category(m):
-                tags[k] = self.get_tag_values_by_key_of_category(m, k)
-            ret[m] = tags
+                tag_values[k] = self.get_tag_values_by_key_of_category(m, k, tags, use_like = use_like)
+            ret[m] = tag_values
 
         return ret
 
@@ -42,27 +49,10 @@ class InfluxDB(TimeseriesDatabase):
             tags: Dict[str, str] = {},
             begin_timestamp: Union[int, str, datetime] = None,
             end_timestamp: Union[int, str, datetime] = None,
-            selects: List[str] = []):
+            selects: List[str] = [],
+            *,
+            use_like = False):
         category = self._quote(category, '"')
-
-        where_query = ''
-        for tag, value in tags.items():
-            tag = self._quote(tag, '"')
-            value = self._quote(value, "'")
-
-            where_query += f'{tag} = {value} and '
-
-        begin = self.__convert_to_influx_timequery(begin_timestamp)
-        end = self.__convert_to_influx_timequery(end_timestamp)
-
-        if begin is not None:
-            where_query += f' time >= {begin} and '
-
-        if end is not None:
-            where_query += f' time <= {end} and '
-
-        if where_query != '':
-            where_query = where_query[:-5]
 
         select_query = ''
         if len(selects) == 0:
@@ -74,6 +64,7 @@ class InfluxDB(TimeseriesDatabase):
             select_query = select_query[:-1]
 
         query = f'select {select_query} from {category}'
+        where_query = self._where_condition(tags, begin_timestamp, end_timestamp, use_like=use_like)
         if where_query != '':
             query += f' where {where_query}'
 
@@ -102,11 +93,18 @@ class InfluxDB(TimeseriesDatabase):
     def get_tag_values_by_key_of_category(
             self,
             category: str,
-            key: str) -> List:
+            key: str,
+            tags: Dict[str, str] = {},
+            *,
+            use_like = False) -> List:
         category = self._quote(category, '"')
         key = self._quote(key, '"')
 
         query = f'show tag values from {category} with key = {key}'
+        where_query = self._where_condition(tags, None, None, use_like=use_like)
+        if where_query != '':
+            query += f' where {where_query}'
+
         ret = self.client.query(query)
         values = [value.get('value') for value in ret.get_points()]
         return values
@@ -137,6 +135,38 @@ class InfluxDB(TimeseriesDatabase):
     def _quote(self, val: str, quote_char: str):
         temp = val.replace(quote_char, f'\\{quote_char}')
         return f'{quote_char}{temp}{quote_char}'
+
+    def _where_condition(
+            self,
+            tags: Dict[str, str] = {},
+            begin_timestamp: Union[int, str, datetime] = None,
+            end_timestamp: Union[int, str, datetime] = None,
+            *,
+            use_like = False):
+
+        where_query = ''
+        for tag, value in tags.items():
+            tag = self._quote(tag, '"')
+
+            if use_like:
+                where_query += f'{tag} =~ /.*{value}.*/ and '
+            else:
+                value = self._quote(value, "'")
+                where_query += f'{tag} = {value} and '
+
+        begin = self.__convert_to_influx_timequery(begin_timestamp)
+        end = self.__convert_to_influx_timequery(end_timestamp)
+
+        if begin is not None:
+            where_query += f' time >= {begin} and '
+
+        if end is not None:
+            where_query += f' time <= {end} and '
+
+        if where_query != '':
+            where_query = where_query[:-5]
+
+        return where_query
 
     def __repr__(self):
         return f'InfluxDB_{self.client._host}_{self.client._port}_{self.client._database}'  # NOQA

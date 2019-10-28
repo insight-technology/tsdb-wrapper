@@ -66,6 +66,96 @@ def test_get_tags():
             assert set(expected_tag_values) == set(ret_tag_values)
 
 
+def _compare_tags_in_categories(target, expected):
+    for category in expected:
+        expected_tag_keys = list(expected[category].keys())
+        target_tag_keys = target[category]
+
+        assert len(expected_tag_keys) == len(target_tag_keys)
+        assert set(expected_tag_keys) == set(target_tag_keys)
+
+        for tag_key in target_tag_keys:
+            expected_tag_values = expected[category][tag_key]
+            target_tag_values = target[category][tag_key]
+
+            assert len(expected_tag_values) == len(target_tag_values)
+            assert set(expected_tag_values) == set(target_tag_values)
+
+
+def test_schema_attr():
+    expected = {
+        'simple': {
+            'tk1': ['tv1a', 'tv1b'],
+            'tk2': ['tv2a', 'tv2b'],
+            'tk3': ['tv3a'],
+        },
+        ' ,-_/.\'"': {
+            'tk ,-_/.\'"1': ['tv ,-_/.\'"1'],
+            'tk ,-_/.\'"2': ['tv ,-_/.\'"2']
+        },
+    }
+    ret_schema = test_db.schema
+    _compare_tags_in_categories(ret_schema, expected)
+
+
+def test_get_filtered_schema():
+    expected_like1 = {
+        'simple': {
+            'tk1': ['tv1a'],
+            'tk2': ['tv2a'],
+            'tk3': ['tv3a'],
+        },
+        ' ,-_/.\'"': {
+            'tk ,-_/.\'"1': [],
+            'tk ,-_/.\'"2': []
+        },
+    }
+    expected_like2 = {
+        'simple': {
+            'tk1': [],
+            'tk2': [],
+            'tk3': [],
+        },
+        ' ,-_/.\'"': {
+            'tk ,-_/.\'"1': ['tv ,-_/.\'"1'],
+            'tk ,-_/.\'"2': ['tv ,-_/.\'"2']
+        },
+    }
+    expected_not_use_like1 = {
+        'simple': {
+            'tk1': [],
+            'tk2': [],
+            'tk3': [],
+        },
+        ' ,-_/.\'"': {
+            'tk ,-_/.\'"1': [],
+            'tk ,-_/.\'"2': []
+        },
+    }
+    expected_not_use_like2 = {
+        'simple': {
+            'tk1': ['tv1b'],
+            'tk2': ['tv2b'],
+            'tk3': ['tv3a'],
+        },
+        ' ,-_/.\'"': {
+            'tk ,-_/.\'"1': [],
+            'tk ,-_/.\'"2': []
+        },
+    }
+    ret_schema = test_db.get_filtered_schema(tags={"tk1":"a"}, use_like=True)
+    _compare_tags_in_categories(ret_schema, expected_like1)
+
+    ret_schema = test_db.get_filtered_schema(tags={'tk ,-_/.\'"1': "1"}, use_like=True)
+    _compare_tags_in_categories(ret_schema, expected_like2)
+
+    ret_schema = test_db.get_filtered_schema(tags={"tk2": "b"}, use_like=False)
+    _compare_tags_in_categories(ret_schema, expected_not_use_like1)
+
+    ret_schema = test_db.get_filtered_schema(tags={"tk2": "tv2b"}, use_like=False)
+    _compare_tags_in_categories(ret_schema, expected_not_use_like2)
+
+
 def test_get_value_keys():
     expected = {
         'simple': ['fk1', 'fk2'],
@@ -210,6 +300,43 @@ def test_get_value_keys():
                 'tk1': 'tv1b',
                 'tk2': 'tv2b',
             },
+        },
+        [
+            {
+                'time': '2050-09-10T15:00:00Z',
+                'fk1': 'fv1a', 'fk2': 1,
+                'tk1': 'tv1b', 'tk2': 'tv2b', 'tk3': 'tv3a'
+            }
+        ],
+    ),
+    (
+        {
+            'category': 'simple',
+            'tags': {
+                'tk1': 'b',
+            },
+            'use_like' : True
+        },
+        [
+            {
+                'time': '2050-09-10T14:00:00Z',
+                'fk1': 'fv1a', 'fk2': 1,
+                'tk1': 'tv1b', 'tk2': 'tv2a', 'tk3': 'tv3a'
+            },
+            {
+                'time': '2050-09-10T15:00:00Z',
+                'fk1': 'fv1a', 'fk2': 1,
+                'tk1': 'tv1b', 'tk2': 'tv2b', 'tk3': 'tv3a'
+            }
+        ],
+    ),
+    (
+        {
+            'category': 'simple',
+            'tags': {
+                'tk2': 'b',
+            },
+            'use_like' : True
         },
         [
             {

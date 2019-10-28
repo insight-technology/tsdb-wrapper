@@ -96,6 +96,13 @@ class TimeseriesDatabase:
     def schema(self) -> TimeseriesDataSchema:
         raise NotImplementedError
 
+    def get_filtered_schema(
+            self,
+            tags: Dict[str, str] = {},
+            *,
+            use_like = False) -> TimeseriesDataSchema:
+        raise NotImplementedError
+
     def get_categories(self):
         raise NotImplementedError
 
