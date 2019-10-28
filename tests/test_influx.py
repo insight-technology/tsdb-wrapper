@@ -309,6 +309,43 @@ def test_get_value_keys():
             }
         ],
     ),
+    (
+        {
+            'category': 'simple',
+            'tags': {
+                'tk1': 'b',
+            },
+            'use_like' : True
+        },
+        [
+            {
+                'time': '2050-09-10T14:00:00Z',
+                'fk1': 'fv1a', 'fk2': 1,
+                'tk1': 'tv1b', 'tk2': 'tv2a', 'tk3': 'tv3a'
+            },
+            {
+                'time': '2050-09-10T15:00:00Z',
+                'fk1': 'fv1a', 'fk2': 1,
+                'tk1': 'tv1b', 'tk2': 'tv2b', 'tk3': 'tv3a'
+            }
+        ],
+    ),
+    (
+        {
+            'category': 'simple',
+            'tags': {
+                'tk2': 'b',
+            },
+            'use_like' : True
+        },
+        [
+            {
+                'time': '2050-09-10T15:00:00Z',
+                'fk1': 'fv1a', 'fk2': 1,
+                'tk1': 'tv1b', 'tk2': 'tv2b', 'tk3': 'tv3a'
+            }
+        ],
+    ),
 ])
 def test_query(query, expected):
     ret = test_db.query(**query)
