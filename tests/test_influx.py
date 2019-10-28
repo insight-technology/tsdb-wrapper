@@ -27,7 +27,7 @@ def scope_function():
 
     db.query('DROP DATABASE "tsdb_test"')
     db.query('CREATE DATABASE "tsdb_test"')
-            
+
 
 def test_get_schema():
     expected = ['simple', ' ,-_/.\'"']
